@@ -650,40 +650,10 @@ class CameraPlugin extends CameraPlatform {
     }
   }
 
-  late final StreamController<CameraImageData> _frameStreamController =
-      StreamController<CameraImageData>();
-
-  Future<void> _onAnimationFrame(int cameraId, [num? _]) async {
-    print('animating ${DateTime.now()}');
-
-    // final Camera camera = getCamera(cameraId);
-    // final CameraImageData data = CameraImageData(
-    //   width: camera.videoElement.videoWidth,
-    //   height: camera.videoElement.videoHeight,
-    //   planes: <CameraImagePlane>[
-    //     // CameraImagePlane(
-    //     //   bytes: pictureBlob.,
-    //     //   bytesPerRow: camera.blobBuilder,
-    //     // )
-    //   ],
-    //   format: const CameraImageFormat(
-    //     ImageFormatGroup.unknown,
-    //     raw: '',
-    //   ),
-    // );
-    // _frameStreamController.add(data);
-  }
-
   @override
   Stream<CameraImageData> onStreamedFrameAvailable(int cameraId,
       {CameraImageStreamOptions? options}) {
-    print('onStreamedFrameAvailable called from alestiago');
-
-    html.window.requestAnimationFrame(
-      (num highResTime) => _onAnimationFrame(cameraId, highResTime),
-    );
-
-    return _frameStreamController.stream;
+    return getCamera(cameraId).getImageCapturingStream();
   }
 
   /// Returns a media video stream for the device with the given [deviceId].

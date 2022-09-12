@@ -502,6 +502,41 @@ class Camera {
     }
   }
 
+  late final StreamController<CameraImageData> frameStreamController =
+      StreamController<CameraImageData>.broadcast();
+
+  Stream<CameraImageData> getImageCapturingStream() {
+    final List<html.MediaStreamTrack> videoTracks = stream!.getVideoTracks();
+    if (videoTracks.isNotEmpty) {
+      final html.MediaStreamTrack defaultVideoTrack = videoTracks.first;
+      defaultVideoTrack.addEventListener(
+        'frames',
+        (_) async {
+          final html.ImageCapture image = html.ImageCapture(defaultVideoTrack);
+          late final html.ImageBitmap frame;
+          late final html.Blob blob;
+          try {
+            frame = await image.grabFrame();
+            blob = await image.takePhoto();
+          } catch (e) {
+            print(e);
+            return;
+          }
+
+          final data = CameraImageData(
+            format: const CameraImageFormat(ImageFormatGroup.jpeg, raw: 'jpeg'),
+            width: frame.width!,
+            height: frame.height!,
+            planes: const <CameraImagePlane>[],
+          );
+          frameStreamController.add(data);
+        },
+      );
+    }
+
+    return frameStreamController.stream;
+  }
+
   Future<void> _onVideoRecordingStopped(
     html.Event event, [
     Duration? maxVideoDuration,
@@ -600,6 +635,7 @@ class Camera {
     await _onVideoRecordingErrorSubscription?.cancel();
     _onVideoRecordingErrorSubscription = null;
     await videoRecordingErrorController.close();
+    await frameStreamController.close();
   }
 
   /// Returns the first supported video mime type (amongst mp4 and webm)
