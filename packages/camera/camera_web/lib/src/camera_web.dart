@@ -650,6 +650,13 @@ class CameraPlugin extends CameraPlatform {
     }
   }
 
+  @override
+  Stream<CameraImageData> onStreamedFrameAvailable(int cameraId,
+      {CameraImageStreamOptions? options}) {
+    print('onStreamedFrameAvailable called from alestiago');
+    return const Stream.empty();
+  }
+
   /// Returns a media video stream for the device with the given [deviceId].
   Future<html.MediaStream> _getVideoStreamForDevice(
     String deviceId,
