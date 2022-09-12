@@ -511,7 +511,10 @@ class Camera {
       final html.MediaStreamTrack defaultVideoTrack = videoTracks.first;
       defaultVideoTrack.addEventListener(
         'frames',
-        (_) async {
+        (event) async {
+          print('newFrame ${event.timeStamp}');
+          print(event);
+
           final html.ImageCapture image = html.ImageCapture(defaultVideoTrack);
           late final html.ImageBitmap frame;
           late final html.Blob blob;
