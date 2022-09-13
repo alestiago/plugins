@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:html' as html;
 import 'dart:ui';
+import 'package:js_bindings/js_bindings.dart' as htmljs;
 
 import 'package:camera_platform_interface/camera_platform_interface.dart';
 import 'package:camera_web/src/camera_service.dart';
@@ -228,11 +229,7 @@ class Camera {
     stream = null;
   }
 
-  /// Captures a picture and returns the saved file in a JPEG format.
-  ///
-  /// Enables the camera flash (torch mode) for a period of taking a picture
-  /// if the flash mode is either [FlashMode.auto] or [FlashMode.always].
-  Future<XFile> takePicture() async {
+  Future<html.Blob> _takePictureBlob() async {
     final bool shouldEnableTorchMode =
         flashMode == FlashMode.auto || flashMode == FlashMode.always;
 
@@ -262,7 +259,15 @@ class Camera {
       _setTorchMode(enabled: false);
     }
 
-    return XFile(html.Url.createObjectUrl(blob));
+    return blob;
+  }
+
+  /// Captures a picture and returns the saved file in a JPEG format.
+  ///
+  /// Enables the camera flash (torch mode) for a period of taking a picture
+  /// if the flash mode is either [FlashMode.auto] or [FlashMode.always].
+  Future<XFile> takePicture() async {
+    return XFile(html.Url.createObjectUrl(_takePictureBlob()));
   }
 
   /// Returns a size of the camera video based on its first video track size.
@@ -489,7 +494,6 @@ class Camera {
     Duration? maxVideoDuration,
   ]) {
     final html.Blob? blob = (event as html.BlobEvent).data;
-    print('${DateTime.now()} $blob');
 
     // Append the recorded part of the video to the list of all video data files.
     if (blob != null) {
@@ -507,38 +511,24 @@ class Camera {
       StreamController<CameraImageData>.broadcast();
 
   Stream<CameraImageData> getImageCapturingStream() {
-    final List<html.MediaStreamTrack> videoTracks = stream!.getVideoTracks();
-    if (videoTracks.isNotEmpty) {
-      final html.MediaStreamTrack defaultVideoTrack = videoTracks.first;
-      defaultVideoTrack.addEventListener(
-        'frames',
-        (event) async {
-          print('newFrame ${event.timeStamp}');
-          print(event);
-
-          final html.ImageCapture image = html.ImageCapture(defaultVideoTrack);
-          late final html.ImageBitmap frame;
-          late final html.Blob blob;
-          try {
-            frame = await image.grabFrame();
-            blob = await image.takePhoto();
-          } catch (e) {
-            print(e);
-            return;
-          }
-
-          final data = CameraImageData(
-            format: const CameraImageFormat(ImageFormatGroup.jpeg, raw: 'jpeg'),
-            width: frame.width!,
-            height: frame.height!,
-            planes: const <CameraImagePlane>[],
-          );
-          frameStreamController.add(data);
-        },
-      );
-    }
-
+    window!.requestAnimationFrame(_onAnimationFrame);
     return frameStreamController.stream;
+  }
+
+  static final _reader = html.FileReader();
+
+  Future<void> _onAnimationFrame([num? _]) async {
+    final blob = await _takePictureBlob();
+    _reader.readAsArrayBuffer(blob);
+    _reader.onLoadEnd.listen((event) {
+      final result = _reader.result;
+      if (result == null) {
+        return;
+      }
+
+      final data = result as Uint8List;
+      print('${DateTime.now} $data');
+    });
   }
 
   Future<void> _onVideoRecordingStopped(
