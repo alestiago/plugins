@@ -525,9 +525,22 @@ class Camera {
         return;
       }
 
-      final data = result as Uint8List;
-      print('${DateTime.now()} $data');
+      final Uint8List bytes = result as Uint8List;
+      final CameraImageData cameraImageData = CameraImageData(
+        format: const CameraImageFormat(
+          ImageFormatGroup.jpeg,
+          raw: 'image/jpeg',
+        ),
+        width: videoElement.videoWidth,
+        height: videoElement.videoHeight,
+        planes: [
+          CameraImagePlane(bytes: bytes, bytesPerRow: 8),
+        ],
+      );
+      frameStreamController.add(cameraImageData);
     });
+
+    window!.requestAnimationFrame(_onAnimationFrame);
   }
 
   Future<void> _onVideoRecordingStopped(
