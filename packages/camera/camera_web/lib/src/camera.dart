@@ -489,6 +489,7 @@ class Camera {
     Duration? maxVideoDuration,
   ]) {
     final html.Blob? blob = (event as html.BlobEvent).data;
+    print('${DateTime.now()} $blob');
 
     // Append the recorded part of the video to the list of all video data files.
     if (blob != null) {
