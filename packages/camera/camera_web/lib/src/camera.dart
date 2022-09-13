@@ -527,7 +527,7 @@ class Camera {
       }
 
       final data = result as Uint8List;
-      print('${DateTime.now} $data');
+      print('${DateTime.now()} $data');
     });
   }
 
