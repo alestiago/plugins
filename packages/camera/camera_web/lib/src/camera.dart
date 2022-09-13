@@ -5,7 +5,6 @@
 import 'dart:async';
 import 'dart:html' as html;
 import 'dart:ui';
-import 'package:js_bindings/js_bindings.dart' as htmljs;
 
 import 'package:camera_platform_interface/camera_platform_interface.dart';
 import 'package:camera_web/src/camera_service.dart';
