@@ -47,7 +47,7 @@ class CameraService {
 
     try {
       final Map<String, dynamic> constraints = options.toJson();
-      return await mediaDevices.getUserMedia(constraints);
+      return await mediaDevices.getUserMedia();
     } on html.DomException catch (e) {
       switch (e.name) {
         case 'NotFoundError':
