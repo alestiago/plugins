@@ -233,12 +233,6 @@ class CameraPlugin extends CameraPlatform {
           video: VideoConstraints(
             facingMode:
                 cameraType != null ? FacingModeConstraint(cameraType) : null,
-            width: VideoSizeConstraint(
-              ideal: videoSize.width.toInt(),
-            ),
-            height: VideoSizeConstraint(
-              ideal: videoSize.height.toInt(),
-            ),
             deviceId: cameraMetadata.deviceId,
           ),
         ),
